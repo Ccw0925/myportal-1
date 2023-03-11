@@ -8,6 +8,10 @@ module.exports = {
         "content-show": "contentShow 0.15s ease-in-out",
       },
 
+      fontFamily: {
+        navigation: ["sohne-var", "Helvetica Neue", "Arial", "sans-serif"],
+      },
+
       keyframes: () => ({
         fadeIn: {
           from: { opacity: 0 },

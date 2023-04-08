@@ -24,17 +24,37 @@ const Nav: React.FC = () => {
         <ul className="p-4">
           <li className="mb-4">
             <a href="#" className="text-gray-200 hover:text-white">
-              Home
+              Financial Dashboard
             </a>
           </li>
           <li className="mb-4">
             <a href="#" className="text-gray-200 hover:text-white">
-              About
+              Invoices
             </a>
           </li>
           <li className="mb-4">
             <a href="#" className="text-gray-200 hover:text-white">
-              Contact
+              Site Diary
+            </a>
+          </li>
+          <li className="mb-4">
+            <a href="#" className="text-gray-200 hover:text-white">
+              File
+            </a>
+          </li>
+          <li className="mb-4">
+            <a href="#" className="text-gray-200 hover:text-white">
+              Tasks
+            </a>
+          </li>
+          <li className="mb-4">
+            <a href="#" className="text-gray-200 hover:text-white">
+              Photos
+            </a>
+          </li>
+          <li className="mb-4">
+            <a href="#" className="text-gray-200 hover:text-white">
+              Teams
             </a>
           </li>
         </ul>

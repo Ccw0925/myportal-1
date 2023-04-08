@@ -1,5 +1,92 @@
 import Sidebar from "../components/navigations/Sidebar";
 import Image from "next/image";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+import { faker } from "@faker-js/faker";
+import CostingTable from "../components/costing/table/CostingTable";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+export const marginalStatus = {
+  responsive: true,
+  plugins: {
+    legend: {
+      position: "top" as const,
+    },
+    title: {
+      display: true,
+      text: "Marginal Status",
+    },
+  },
+};
+
+export const trueValueTrueCost = {
+  responsive: true,
+  plugins: {
+    legend: {
+      position: "top" as const,
+    },
+    title: {
+      display: true,
+      text: "True Value vs True Cost (Accumulated)",
+    },
+  },
+};
+
+const labels = ["January", "February", "March", "April", "May", "June", "July"];
+
+export const data = {
+  labels,
+  datasets: [
+    {
+      label: "Dataset 1",
+      data: labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
+      borderColor: "rgb(255, 99, 132)",
+      backgroundColor: "rgba(255, 99, 132, 0.5)",
+    },
+    {
+      label: "Dataset 2",
+      data: labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
+      borderColor: "rgb(53, 162, 235)",
+      backgroundColor: "rgba(53, 162, 235, 0.5)",
+    },
+  ],
+};
+
+export const data2 = {
+  labels,
+  datasets: [
+    {
+      label: "Dataset 1",
+      data: labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
+      borderColor: "rgb(255, 99, 132)",
+      backgroundColor: "rgba(255, 99, 132, 0.5)",
+    },
+    {
+      label: "Dataset 2",
+      data: labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
+      borderColor: "rgb(53, 162, 235)",
+      backgroundColor: "rgba(53, 162, 235, 0.5)",
+    },
+  ],
+};
 
 const Test: React.FC = () => {
   return (
@@ -99,13 +186,20 @@ const Test: React.FC = () => {
             </div>
           </div>
           <div className="flex flex-[2] flex-col gap-3">
-            <div className="aspect-video flex-1 rounded-[25px] bg-white shadow-lg">
-              Marginal Status
+            <div className="aspect-video flex-1 rounded-[25px] bg-white p-5 shadow-lg">
+              <Line options={marginalStatus} data={data} />
             </div>
-            <div className="aspect-video flex-1 rounded-[25px] bg-white shadow-lg">
-              True Value vs True Cost (Accumulated)
+            <div className="aspect-video flex-1 rounded-[25px] bg-white p-5 shadow-lg">
+              <Line options={trueValueTrueCost} data={data2} />
             </div>
           </div>
+        </div>
+        <div className="relative mt-8 flex bg-white p-5 shadow-lg flex-col">
+          <h1 className="text-3xl font-bold mb-5">Budget VS Costs</h1>
+          <button className="rounded-md bg-[#538DFF] px-5 py-2 text-white absolute right-5">
+            Add New
+          </button>
+          <CostingTable />
         </div>
       </div>
     </div>

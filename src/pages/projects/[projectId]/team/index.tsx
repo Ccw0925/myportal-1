@@ -18,7 +18,7 @@ const Team = () => {
   const { usersForProject } = useGetUsersForProject({
     projectId: projectId,
   });
-  const { users, isLoading, isError } = useGetUsers();
+  const { users, isLoading } = useGetUsers();
   const { isCreator } = useIsCreatorOfProject({
     projectId: projectId,
   });
@@ -51,10 +51,8 @@ const Team = () => {
     <SessionAuth>
       {isLoading ? (
         <div>Loading...</div>
-      ) : isError ? (
-        <div>Error!</div>
       ) : (
-        <div className="flex h-screen">
+        <div className="flex h-[80vh]">
           <div className="m-auto">
             <div className="flex justify-between">
               <div className="text-lg font-medium">Team</div>

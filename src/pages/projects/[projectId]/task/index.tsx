@@ -19,7 +19,7 @@ const EditButton = dynamic(
 const Task = () => {
   const router = useRouter();
   const projectId = router.query.projectId as string;
-  const { tasks, isLoading, isError } = useGetTasks({
+  const { tasks, isLoading } = useGetTasks({
     projectId: projectId,
   });
   const pendingDeleteCountRef = useRef(0); // prevent parallel GET requests as much as possible. # https://profy.dev/article/react-query-usemutation#edge-case-concurrent-updates-to-the-cache
@@ -28,10 +28,8 @@ const Task = () => {
     <SessionAuth>
       {isLoading ? (
         <div>Loading...</div>
-      ) : isError ? (
-        <div>Error!</div>
       ) : (
-        <div className="flex h-screen">
+        <div className="flex h-[80vh]">
           <div className="m-auto">
             <div className="flex justify-between">
               <div className="text-lg font-medium">Tasks</div>

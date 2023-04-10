@@ -1,5 +1,5 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { trycatch } from "../../../utils/trycatch";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const createPlantSchema = z.object({
@@ -22,59 +22,50 @@ export const plantRouter = createTRPCRouter({
   createPlant: protectedProcedure
     .input(createPlantSchema)
     .mutation(async ({ ctx, input }) => {
-      try {
-        return await ctx.prisma.plant.create({
-          data: {
-            type: input.plantType,
-            amount: input.plantAmount,
-            createdById: ctx.session.user.id,
-            siteDiaryId: input.siteDiaryId,
-          },
-        });
-      } catch (error) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: (error as Error).message,
-          cause: error,
-        });
-      }
+      return await trycatch({
+        fn: () => {
+          return ctx.prisma.plant.create({
+            data: {
+              type: input.plantType,
+              amount: input.plantAmount,
+              createdById: ctx.session.user.id,
+              siteDiaryId: input.siteDiaryId,
+            },
+          });
+        },
+        errorMessages: ["Failed to create plant"],
+      })();
     }),
   updatePlant: protectedProcedure
     .input(updatePlantSchema)
     .mutation(async ({ ctx, input }) => {
-      try {
-        await ctx.prisma.plant.update({
-          where: {
-            id: input.plantId,
-          },
-          data: {
-            type: input.plantType,
-            amount: input.plantAmount,
-          },
-        });
-      } catch (error) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: (error as Error).message,
-          cause: error,
-        });
-      }
+      return await trycatch({
+        fn: () => {
+          return ctx.prisma.plant.update({
+            where: {
+              id: input.plantId,
+            },
+            data: {
+              type: input.plantType,
+              amount: input.plantAmount,
+            },
+          });
+        },
+        errorMessages: ["Failed to update plant"],
+      })();
     }),
   deletePlant: protectedProcedure
     .input(deletePlantSchema)
     .mutation(async ({ ctx, input }) => {
-      try {
-        return await ctx.prisma.plant.delete({
-          where: {
-            id: input.plantId,
-          },
-        });
-      } catch (error) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: (error as Error).message,
-          cause: error,
-        });
-      }
+      return await trycatch({
+        fn: () => {
+          return ctx.prisma.plant.delete({
+            where: {
+              id: input.plantId,
+            },
+          });
+        },
+        errorMessages: ["Failed to delete plant"],
+      })();
     }),
 });

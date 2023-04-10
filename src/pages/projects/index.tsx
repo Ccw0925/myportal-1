@@ -4,6 +4,7 @@ import { useGetProjects } from "../../hooks/project";
 
 import { useRef } from "react";
 import SessionAuth from "../../components/auth/SessionAuth";
+import { Header } from "../../components/common/Header";
 import { api } from "../../utils/api";
 
 const CreateButton = dynamic(
@@ -18,14 +19,13 @@ const EditButton = dynamic(() => import("../../components/project/EditButton"));
 const Projects = () => {
   const router = useRouter();
   const utils = api.useContext();
-  const { projects, isLoading, isError } = useGetProjects();
+  const { projects, isLoading } = useGetProjects();
   const pendingDeleteCountRef = useRef(0);
   return (
     <SessionAuth>
+      <Header />
       {isLoading ? (
         <div>Loading...</div>
-      ) : isError ? (
-        <div>Error!</div>
       ) : (
         <div className="flex h-screen">
           <div className="m-auto">

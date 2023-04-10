@@ -39,7 +39,7 @@ const Dropdown = dynamic(
 const SiteDiary = () => {
   const router = useRouter();
   const siteDiaryId = router.query.siteDiaryId as string;
-  const { siteDiary, isLoading, isError } = useGetSiteDiary({
+  const { siteDiary, isLoading } = useGetSiteDiary({
     siteDiaryId: siteDiaryId,
   });
   const { updateSiteDiaryWeather } = useUpdateSiteDiaryWeather();
@@ -59,17 +59,13 @@ const SiteDiary = () => {
       siteDiaryId: siteDiaryId,
     });
   };
-  if (isError) {
-    void router.push("/projects");
-    return <div>Error...</div>;
-  }
   return (
     <SessionAuth>
       {isLoading ? (
         <div>Loading...</div>
       ) : (
         siteDiary && (
-          <div className="flex h-screen">
+          <div className="flex h-[80vh]">
             <div className="m-auto w-10/12">
               <div className="text-lg font-medium">{siteDiary.name}</div>
               <div className="flex justify-between">

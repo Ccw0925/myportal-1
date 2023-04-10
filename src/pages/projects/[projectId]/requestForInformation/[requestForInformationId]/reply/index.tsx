@@ -13,7 +13,7 @@ const Replies = () => {
   const session = useSession();
   const requestForInformationId = router.query
     .requestForInformationId as string;
-  const { replies, isLoading, isError } = useGetReplies({
+  const { replies, isLoading } = useGetReplies({
     requestForInformationId: requestForInformationId,
   });
 
@@ -40,17 +40,12 @@ const Replies = () => {
     });
   };
 
-  if (isError) {
-    void router.push("/projects");
-    return <div>Error...</div>;
-  }
-
   return (
     <SessionAuth>
       {isLoading ? (
         <div>Loading...</div>
       ) : (
-        <div className="flex h-screen">
+        <div className="flex h-[80vh]">
           <div className="m-auto w-[80%]">
             <div className="flex justify-center">
               <div className="text-lg font-medium ">

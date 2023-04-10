@@ -12,13 +12,8 @@ import {
 import { ChonkyIconFA } from "chonky-icon-fontawesome";
 import { useRouter } from "next/router";
 import path from "path";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import SessionAuth from "../../../../components/auth/SessionAuth";
 import {
   useCreateFolder,
@@ -30,21 +25,17 @@ import {
 import { api } from "../../../../utils/api";
 
 const S3Browser = () => {
-  const utils = api.useContext();
   const router = useRouter();
-  const [uploadingFile, setUploadingFile] = useState<boolean>(false);
+  const utils = api.useContext();
   const hiddenFileInputRef = useRef<HTMLInputElement | null>(null);
   const hiddenAnchorRef = useRef<HTMLAnchorElement | null>(null);
   const [folderPrefix, setFolderPrefix] = useState<string>("/");
-  const mounted = useRef<boolean>(false);
   const projectId = router.query.projectId as string;
-  const [projectBucketCreated, setProjectBucketCreated] = useState(false);
 
-  const { chonkyFiles, isFetchS3BucketContentsError } =
-    useFetchS3BucketContents({
-      prefix: folderPrefix,
-      projectId: projectId,
-    });
+  const { chonkyFiles } = useFetchS3BucketContents({
+    prefix: folderPrefix,
+    projectId: projectId,
+  });
 
   const { deleteS3Object } = useDeleteS3Object();
 
@@ -54,53 +45,40 @@ const S3Browser = () => {
 
   const { createFolder } = useCreateFolder();
 
-  console.log(chonkyFiles);
-
-  useEffect(() => {
-    const helper = async () => {
-      if (mounted.current) return;
-      mounted.current = true;
-      setChonkyDefaults({
-        iconComponent: ChonkyIconFA,
-        disableDragAndDrop: true,
-      });
-      // check if the folder for project exists
-      chonkyFiles?.map((file) => {
-        if (file?.name === projectId) {
-          return setProjectBucketCreated(true);
-        }
-      }, []);
-      await createFolder({
-        prefix: folderPrefix,
-        folderName: projectId,
-        projectId: projectId,
-      });
-      setProjectBucketCreated(true);
-    };
-    void helper();
-  }, [chonkyFiles, createFolder, folderPrefix, projectId]);
+  setChonkyDefaults({
+    iconComponent: ChonkyIconFA,
+    disableDragAndDrop: true,
+  });
 
   const handleDownloadFile = useCallback(
     async (fileData: FileData) => {
-      const { preSignedURLForDownload } = await getPreSignedURLForDownload({
-        fileId: fileData.id,
-        projectId: projectId,
-      });
-      fetch(preSignedURLForDownload, {
-        method: "GET",
-      })
-        .then((res) => res.blob())
-        .then((blob) => {
-          const url = window.URL.createObjectURL(new Blob([blob]));
-          if (hiddenAnchorRef.current) {
-            hiddenAnchorRef.current.href = url;
-            hiddenAnchorRef.current.download = fileData.name;
-            hiddenAnchorRef.current.click();
-          }
-        })
-        .catch((error) => {
-          console.error(error);
+      try {
+        const { preSignedURLForDownload } = await getPreSignedURLForDownload({
+          fileId: fileData.id,
+          projectId: projectId,
         });
+        fetch(preSignedURLForDownload, {
+          method: "GET",
+        })
+          .then((res) => res.blob())
+          .then((blob) => {
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            if (hiddenAnchorRef.current) {
+              hiddenAnchorRef.current.href = url;
+              hiddenAnchorRef.current.download = fileData.name;
+              hiddenAnchorRef.current.click();
+            }
+          })
+          .catch(() => {
+            toast.error("Error when downloading file");
+          });
+      } catch (error) {
+        toast.error("Error when downloading file");
+        // This try catch is necessary as getPreSignedURLForDownload
+        // returns a promise that can possibly cause a runtime error.
+        // we handle this error in src/utils/api.ts so there's no need
+        // to do anything here other than catch the error.
+      }
     },
     [getPreSignedURLForDownload, projectId]
   );
@@ -114,7 +92,7 @@ const S3Browser = () => {
       // if exists, don't upload
       chonkyFiles?.map((file) => {
         if (file?.name == fileName) {
-          alert("Duplicate file name. Delete existing file first");
+          toast.error("Duplicate file name. Delete existing file first");
           return;
         }
       });
@@ -123,28 +101,52 @@ const S3Browser = () => {
     }
   };
 
-  const handleUploadFile = async (file: File) => {
-    setUploadingFile(true);
-    const fileId = folderPrefix === "/" ? file.name : folderPrefix + file.name;
-    const { preSignedURLForUpload } = await getPreSignedURLForUpload({
-      fileId: fileId,
-      projectId: projectId,
-    });
-    fetch(preSignedURLForUpload, {
-      method: "PUT",
-      headers: {
-        "Content-Type": file.type,
-      },
-      body: file,
-    })
-      .catch((error) => {
-        console.error(error);
-      })
-      .finally(() => {
-        setUploadingFile(false);
+  const handleUploadFile = useCallback(
+    async (file: File) => {
+      const fileId =
+        folderPrefix === "/" ? file.name : folderPrefix + file.name;
+      try {
+        const { preSignedURLForUpload } = await getPreSignedURLForUpload({
+          fileId: fileId,
+          projectId: projectId,
+        });
+
+        const uploadFile = fetch(preSignedURLForUpload, {
+          method: "PUT",
+          headers: {
+            "Content-Type": file.type,
+          },
+          body: file,
+        }).catch(() => {
+          toast.error("Error when uploading file");
+        });
+
+        toast
+          .promise(uploadFile, {
+            loading: "Uploading file",
+            success: "File uploaded successfully",
+            error: "Error when uploading file",
+          })
+          .catch(() => {
+            toast.error("Error when uploading file");
+          });
+      } catch (error) {
+        toast.error("Error when uploading file");
+        // This try catch is necessary as getPreSignedURLForDownload
+        // returns a promise that can possibly cause a runtime error.
+        // we handle this error in src/utils/api.ts so there's no need
+        // to do anything here other than catch the error.
+      } finally {
         void utils.s3.fetchS3BucketContents.invalidate(); // refetch bucket contents
-      });
-  };
+      }
+    },
+    [
+      folderPrefix,
+      getPreSignedURLForUpload,
+      projectId,
+      utils.s3.fetchS3BucketContents,
+    ]
+  );
 
   const folderChain = useMemo(() => {
     let folderChain: FileArray;
@@ -187,7 +189,7 @@ const S3Browser = () => {
         }
       } else if (data.id === ChonkyActions.DeleteFiles.id) {
         for (const file of data.state.selectedFilesForAction) {
-          void deleteS3Object({
+          deleteS3Object({
             prefix: folderPrefix,
             fileId: file.id,
             projectId: projectId,
@@ -195,7 +197,10 @@ const S3Browser = () => {
         }
       } else if (data.id === ChonkyActions.DownloadFiles.id) {
         for (const file of data.state.selectedFilesForAction) {
-          if (file.isDir) continue; // add toast
+          if (file.isDir) {
+            toast.error("Cannot download folders");
+            continue;
+          }
           void handleDownloadFile(file);
         }
       } else if (data.id === ChonkyActions.UploadFiles.id) {
@@ -203,7 +208,7 @@ const S3Browser = () => {
       } else if (data.id === ChonkyActions.CreateFolder.id) {
         const folderName = prompt("Provide the name for your new folder:");
         if (folderName)
-          void createFolder({
+          createFolder({
             prefix: folderPrefix,
             folderName: folderName,
             projectId: projectId,
@@ -220,44 +225,35 @@ const S3Browser = () => {
     ChonkyActions.DeleteFiles,
   ];
 
-  if (!mounted.current || !projectBucketCreated) return null;
-
   return (
     <SessionAuth>
-      {isFetchS3BucketContentsError ? (
-        <div>Fetch error!</div>
-      ) : (
-        <div>
-          <div className="h-96 w-10/12">
-            <FileBrowser
-              files={
-                chonkyFiles
-                  ? chonkyFiles
-                  : Array.from({ length: 3 }, () => null)
-              }
-              folderChain={folderChain}
-              onFileAction={handleFileAction}
-              fileActions={fileActions}
-            >
-              <FileNavbar />
-              <FileToolbar />
-              <FileList />
-              <FileContextMenu />
-              <input
-                type="file"
-                aria-label="input"
-                ref={hiddenFileInputRef}
-                onChange={(e) => {
-                  void handleFileInputChange(e);
-                }}
-                className="hidden"
-              />
-              <a ref={hiddenAnchorRef} />
-            </FileBrowser>
-            {uploadingFile && <div>Uploading file...</div>}
-          </div>
+      <div className="flex h-screen max-h-[80vh] justify-center">
+        <div className="my-16 w-11/12 lg:w-9/12">
+          <FileBrowser
+            files={
+              chonkyFiles ? chonkyFiles : Array.from({ length: 3 }, () => null)
+            }
+            folderChain={folderChain}
+            onFileAction={handleFileAction}
+            fileActions={fileActions}
+          >
+            <FileNavbar />
+            <FileToolbar />
+            <FileList />
+            <FileContextMenu />
+            <input
+              type="file"
+              aria-label="input"
+              ref={hiddenFileInputRef}
+              onChange={(e) => {
+                void handleFileInputChange(e);
+              }}
+              className="hidden"
+            />
+            <a ref={hiddenAnchorRef} />
+          </FileBrowser>
         </div>
-      )}
+      </div>
     </SessionAuth>
   );
 };

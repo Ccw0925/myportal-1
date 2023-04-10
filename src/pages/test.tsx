@@ -95,7 +95,7 @@ const Test: React.FC = () => {
       <div className="flex-1 overflow-auto bg-gray-100 p-10">
         <div className="mb-6 flex">
           <div className="ml-auto">
-            <button className="rounded-md bg-[#538DFF] px-5 py-2 text-white">
+            <button className="rounded-md bg-[#538DFF] px-5 py-2 text-white hover:shadow-lg">
               Update
             </button>
           </div>
@@ -194,9 +194,9 @@ const Test: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="relative mt-8 flex bg-white p-5 shadow-lg flex-col">
-          <h1 className="text-3xl font-bold mb-5">Budget VS Costs</h1>
-          <button className="rounded-md bg-[#538DFF] px-5 py-2 text-white absolute right-5">
+        <div className="relative mt-8 flex flex-col bg-white p-5 shadow-lg">
+          <h1 className="mb-5 text-3xl font-bold">Budget VS Costs</h1>
+          <button className="absolute right-5 rounded-md bg-[#538DFF] px-5 py-2 text-white hover:shadow-lg">
             Add New
           </button>
           <CostingTable />
